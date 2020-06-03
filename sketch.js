@@ -23,19 +23,19 @@ function preload(){
 function setup(){
     canvas = createCanvas(displayWidth,displayHeight);
 
-    player = createSprite(displayWidth/2,displayHeight/2 + 200);
+    player = createSprite(displayWidth/2 ,displayHeight - 50);
     player.addImage("image1",playerImg);
     player.scale = 0.4;
     //player.debug = true;
     player.setCollider("rectangle",0,0,200,580);
 
-    invisibleWall = createSprite(displayWidth/2 - 450,displayHeight/2,30,displayHeight);
+    invisibleWall = createSprite(displayWidth/2 - 450,displayHeight/2,30,-displayHeight*5);
     invisibleWall.visible = false;
 
-    invisibleWall2 = createSprite(displayWidth/2 + 450,displayHeight/2,30,displayHeight);
+    invisibleWall2 = createSprite(displayWidth/2 + 450,displayHeight/2,30,-displayHeight*5);
     invisibleWall2.visible = false;
 
-    restart = createSprite(displayWidth/2 - 5,displayHeight/2 - 20);
+    restart = createSprite(displayWidth/2 - 5,player.y - 150);
     restart.addImage("img",restartImg);
     restart.scale = 0.15;
     restart.visible = false;
@@ -46,34 +46,57 @@ function setup(){
 }
 
 function draw(){
-    background(backgroundImg);
+    background(198,135,103);
 
-    fill("#ffdb58");
-    strokeWeight(7);
-    stroke(255,0,0);
-    textSize(50);
-    textStyle(BOLD);
-    textFont("Comic Sans MS");
-    text("Score : " + score,displayWidth/2 + 150,50);
+    restart.y = player.y - 150;
+
+    //console.log(player.y);
+
+    image(backgroundImg,0,-displayHeight*4,displayWidth,displayHeight*5);
+
+    camera.position.x = displayWidth/2;
+    camera.position.y = player.y;        
 
     if(gameState === 1){
         score = score + Math.round(getFrameRate() / 60);
+
+        fill("#ffdb58");
+        strokeWeight(7);
+        stroke(255,0,0);
+        textSize(50);
+        textStyle(BOLD);
+        textFont("Comic Sans MS");
+        text("Score : " + score,displayWidth/2 + 150,player.y - 300);
+
 
         if(keyDown(RIGHT_ARROW)){
             player.velocityX = 8;
         }else if(keyDown(LEFT_ARROW)){
             player.velocityX = -8;
+        }else if(keyDown(UP_ARROW)){
+            player.velocityY = -8;
+        }else if(keyDown(DOWN_ARROW)){
+            player.velocityX = 0
+            player.velocityY = 0;
         }
 
         player.collide(invisibleWall);
         player.collide(invisibleWall2);
 
-        spawnObstacles();
+        spawnObstacles();        
         
         if(obstaclesGroup.isTouching(player)){
             gameState = 2;
         }
     }else if(gameState === 2){
+        fill("#ffdb58");
+        strokeWeight(7);
+        stroke(255,0,0);
+        textSize(50);
+        textStyle(BOLD);
+        textFont("Comic Sans MS");
+        text("Score : " + score,displayWidth/2 + 150,player.y - 300);
+
         restart.visible = true;
 
         fill("#ffdb58");
@@ -82,9 +105,10 @@ function draw(){
         textSize(50);
         textStyle(BOLD);
         textFont("Comic Sans MS");
-        text("Game Over",displayWidth/2 - 130,displayHeight/2 - 100);
+        text("Game Over",displayWidth/2 - 130,player.y - 200);
 
         player.velocityX = 0;
+        player.velocityY = 0;
 
         obstacle.velocityY = 0;
 
@@ -93,13 +117,29 @@ function draw(){
         }
     }
 
+    if(player.y < -3000){
+        player.velocityY = 0;
+        player.velocityX = 0;
+
+        restart.visible = true;
+
+        gameState = 2;
+
+
+        if (mousePressedOver(restart)) {
+            reset();
+            player.x = displayWidth/2;
+            player.y = displayHeight - 50;
+        }
+    }
+
     drawSprites();
 
 }
 
 function spawnObstacles(){
-    if(frameCount%80 === 0){
-        obstacle = createSprite(random(displayWidth/2 - 430,displayWidth/2 + 430),-5);
+    if(frameCount%55 === 0){
+        obstacle = createSprite(random(displayWidth/2 - 430,displayWidth/2 + 430),random(player.y - 800,player.y - 500));
         obstacle.velocityY = (6 + 1.5 * score / 100);
 
         obstacle.depth = player.depth;
